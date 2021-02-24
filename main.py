@@ -2,10 +2,6 @@ import pyautogui
 import time
 import random
 import webbrowser
-import cv2
-from key import username, password, recovery
-import json
-from pyrobogui import robo, pag
 
 googleUrl = 'https://www.google.com/?client=safari&channel=mac_bm'
 youtubeUrl = 'https://www.youtube.com'
@@ -15,7 +11,8 @@ listPassword = []
 listRecovery = []
 
 
-def readFile():
+def readFileText():
+    time.sleep(2)
     f = open("gmail.txt", "r")
     listGmail = f.readlines()
     for i in listGmail:
@@ -28,14 +25,48 @@ def readFile():
         listRecovery.append(recovery)
 
 
-def waitForLoadPage(image, timeMin, timeMax, timeClick):
+def getFirstName():
+    time.sleep(2)
+    firstName = open("firstName.txt", "r")
+    listFirstName = firstName.readlines()
+    firstNameRandom = random.choice(listFirstName)
+    return firstNameRandom
+
+
+def getLastName():
+    time.sleep(2)
+    lastName = open("lastName.txt", "r")
+    listLastName = lastName.readlines()
+    lastNameRandom = random.choice(listLastName)
+    return lastNameRandom
+
+
+def exitBrowser(timeMin, timeMax):
+    time.sleep(random.randint(timeMin, timeMax))
+    pyautogui.hotkey('command', 'q', interval=0.05)
+
+
+def waitForImgAppear(image, timeMin, timeMax, type, x0, y0, imgClick):
+    while True:
+        time.sleep(random.randint(timeMin, timeMax))
+        logo = pyautogui.locateOnScreen(image, confidence=0.8)
+        if logo is not None:
+            time.sleep(random.randint(timeMin, timeMax))
+            if type == 'click':
+                pyautogui.click(x0, y0)
+            elif type == 'tab':
+                pyautogui.typewrite(['tab'])
+            elif type == 'image':
+                xC, yC = pyautogui.locateCenterOnScreen(imgClick)
+                pyautogui.click(xC, yC)
+
+
+def waitForImageAppearAndClick(image, timeMin, timeMax, timeClick):
     while True:
         time.sleep(random.randint(timeMin, timeMax))
         logo = pyautogui.locateOnScreen(image, confidence=0.8)
         if logo is not None:
             x, y = pyautogui.locateCenterOnScreen(image)
-            print(x, 'x')
-            print(y, 'y')
             if timeClick > 1:
                 for i in range(timeClick):
                     time.sleep(1)
@@ -46,62 +77,114 @@ def waitForLoadPage(image, timeMin, timeMax, timeClick):
             break
 
 
+def isImageAppear(image, timeSleep):
+    time.sleep(timeSleep)
+    if pyautogui.locateOnScreen(image, confidence=0.8) is not None:
+        return True
+
+    return False
+
+
+def enterText(timeMin, timeMax, text, interval):
+    time.sleep(random.randint(timeMin, timeMax))
+    pyautogui.typewrite(text, interval)
+    pyautogui.typewrite(['\n'])
+
+
+def pressTab(timeMin, timeMax):
+    time.sleep(random.randint(timeMin, timeMax))
+    pyautogui.press('tab')
+
+
+def openSafari(timeMin, timeMax):
+    time.sleep(random.randint(timeMin, timeMax))
+    webbrowser.open(googleUrl)
+
+
 def login():
-    readFile()
-    for i in range(10):
+    readFileText()
+    for i in range(len(listUser)):
         time.sleep(5)
         webbrowser.open(googleUrl)
-        waitForLoadPage('btnDangNhap.png', 1, 2, 1)
-
+        waitForImageAppearAndClick('btnDangNhap.png', 1, 2, 1)
         time.sleep(3)
-        pyautogui.typewrite(listUser[0], 0.1)
-        pyautogui.typewrite(['\n'])
-
+        enterText(2, 3, listUser[i], 0.15)
         time.sleep(3)
-        pyautogui.typewrite(listPassword[0], 0.15)
-        pyautogui.typewrite(['\n'])
+        enterText(1, 2, listPassword[i], 0.15)
+
+        squareRecovery = isImageAppear('btnAddRecovery.png', 6)
+        rectangleRecovery = isImageAppear('imgLockAndKey.png', 1)
+        agreeButton = isImageAppear('btnDongY.png', 1)
+        noBirthday = isImageAppear('imgNoBirthday.png', 1)
+        if squareRecovery:
+            waitForImageAppearAndClick('btnAddRecovery.png', 1, 2, 1)
+            waitForImageAppearAndClick('btnHuy.png', 1, 2, 1)
+            time.sleep(2)
+            pressTab(2, 3)
+            enterText(3, 5, listRecovery[i], 0.15)
+            waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+
+        elif rectangleRecovery:
+            waitForImageAppearAndClick('btnCapNhat.png', 1, 2, 1)
+            waitForImageAppearAndClick('btnBoQua.png', 1, 2, 1)
+            time.sleep(2)
+            pressTab(2, 3)
+            enterText(2, 4, listRecovery[i], 0.15)
+            # waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+
+        elif agreeButton:
+            clickAgreeButton()
+            exitBrowser(3, 5)
+            webbrowser.open(googleUrl)
+            waitForImageAppearAndClick('btnDangNhap.png', 1, 2, 1)
+            enterText(3, 5, listUser[i], 0.15)
+            enterText(3, 5, listPassword[i], 0.15)
+            squareRecovery = isImageAppear('btnAddRecovery.png', 6)
+            rectangleRecovery = isImageAppear('btnAddRecovery.png', 2)
+            if squareRecovery:
+                waitForImageAppearAndClick('btnAddRecovery.png', 1, 2, 1)
+                waitForImageAppearAndClick('btnHuy.png', 1, 2, 1)
+                time.sleep(2)
+                pyautogui.typewrite(['tab'])
+                enterText(3, 5, listRecovery[i], 0.15)
+                waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+            elif rectangleRecovery:
+                pyautogui.alert("Rectangle recovery")
+
+        elif noBirthday:
+            pressTab(2, 4)
+            randomDay = random.randint(1, 28)
+            enterText(2, 4, randomDay, 0.15)
+            pressTab(2, 3)
+            randomMonth = random.randint(1, 12)
+            for i in range(randomMonth):
+                print(i, 'month')
+                pyautogui.press('down')
+            pressTab(2, 3)
+            randomYear = random.randint(1970, 1999)
+            enterText(2, 3, randomYear, 0.1)
+            waitForImageAppearAndClick('btnLuu.png', 1, 2, 1)
+            waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+            myAccountLink = 'https://myaccount.google.com/?utm_source=OGB&utm_medium=app'
+            pressTab(3, 5)
+            enterText(2, 3, myAccountLink, 0.1)
+            secureAccount = isImageAppear('btnSecureAccount.png', 5)
+            if secureAccount:
+                waitForImageAppearAndClick('btnSecureAccount.png', 1, 2, 1)
+                signInAndRecovery = isImageAppear('signinAndRecovery.png', 5)
+                if signInAndRecovery:
+                    waitForImageAppearAndClick('signinAndRecovery.png', 1, 2, 1)
+                    pyautogui.click(1034, 511, interval=0.5)
+                    enterText(2, 4, listPassword[i], 0.15)
+                    pressTab(4, 6)
+                    pressTab(1, 1)
+                    enterText(2, 3, listRecovery[i], 0.15)
+                    waitForImageAppearAndClick('btnDone.png', 1, 2, 1)
+        exitBrowser(3, 5)
 
 
 def clickAgreeButton():
-    waitForLoadPage('btnDongY.png', 1, 2, 6)
+    waitForImageAppearAndClick('btnDongY.png', 1, 2, 6)
 
 
-def addRecovery():
-    time.sleep(4)
-    pyautogui.typewrite(['tab'])
-    time.sleep(1)
-    pyautogui.typewrite(['delete'])
-    time.sleep(1)
-    waitForLoadPage('btnAddRecovery.png', 1, 2, 1)
-    time.sleep(2)
-    waitForLoadPage('btnHuy.png', 1, 2, 1)
-    time.sleep(2)
-    pyautogui.typewrite(['tab'])
-    time.sleep(2)
-    pyautogui.typewrite(recovery, 0.1)
-    time.sleep(1)
-    pyautogui.typewrite('\n')
-    time.sleep(1)
-    waitForLoadPage('btnXong.png', 1, 2, 1)
-    time.sleep(2)
-    pyautogui.typewrite(['tab'])
-    time.sleep(2)
-    pyautogui.typewrite(youtubeUrl, 0.1)
-    time.sleep(1)
-    pyautogui.typewrite('\n')
-
-
-def clickToiDongY():
-    login()
-    time.sleep(2)
-    clickAgreeButton()
-    time.sleep(3)
-    pyautogui.hotkey('command', 'q', interval=0.01)
-
-
-def run():
-    clickToiDongY()
-    login()
-    addRecovery()
-    time.sleep(3)
-    pyautogui.hotkey('command', 'q', interval=0.01)
+login()
