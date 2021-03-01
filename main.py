@@ -25,6 +25,12 @@ def readFileText():
         listRecovery.append(recovery)
 
 
+def deleteFirstLine():
+    time.sleep(2)
+    f = open("gmail.txt", "r+")
+    f.writelines('\n')
+
+
 def getFirstName():
     time.sleep(2)
     firstName = open("firstName.txt", "r")
@@ -112,7 +118,8 @@ def login():
         time.sleep(3)
         enterText(1, 2, listPassword[i], 0.15)
 
-        squareRecovery = isImageAppear('btnAddRecovery.png', 6)
+        time.sleep(6)
+        squareRecovery = isImageAppear('btnAddRecovery.png', 1)
         rectangleRecovery = isImageAppear('imgLockAndKey.png', 1)
         agreeButton = isImageAppear('btnDongY.png', 1)
         noBirthday = isImageAppear('imgNoBirthday.png', 1)
@@ -123,6 +130,8 @@ def login():
             pressTab(2, 3)
             enterText(3, 5, listRecovery[i], 0.15)
             waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+            w = open('gmailSuccess.txt', 'a')
+            w.write(listUser[i] + '|' + listPassword[i] + '|' + listRecovery[i] + '\n')
 
         elif rectangleRecovery:
             waitForImageAppearAndClick('btnCapNhat.png', 1, 2, 1)
@@ -130,7 +139,8 @@ def login():
             time.sleep(2)
             pressTab(2, 3)
             enterText(2, 4, listRecovery[i], 0.15)
-            # waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+            w = open('gmailSuccess.txt', 'a')
+            w.write(listUser[i] + '|' + listPassword[i] + '|' + listRecovery[i] + '\n')
 
         elif agreeButton:
             clickAgreeButton()
@@ -148,21 +158,25 @@ def login():
                 pyautogui.typewrite(['tab'])
                 enterText(3, 5, listRecovery[i], 0.15)
                 waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
+                w = open('gmailSuccess.txt', 'a')
+                w.write(listUser[i] + '|' + listPassword[i] + '|' + listRecovery[i] + '\n')
             elif rectangleRecovery:
-                pyautogui.alert("Rectangle recovery")
+                waitForImageAppearAndClick('btnCapNhat.png', 1, 2, 1)
+                waitForImageAppearAndClick('btnBoQua.png', 1, 2, 1)
+                time.sleep(2)
+                pressTab(2, 3)
+                enterText(2, 4, listRecovery[i], 0.15)
+                w = open('gmailSuccess.txt', 'a')
+                w.write(listUser[i] + '|' + listPassword[i] + '|' + listRecovery[i] + '\n')
 
         elif noBirthday:
             pressTab(2, 4)
-            randomDay = random.randint(1, 28)
-            enterText(2, 4, randomDay, 0.15)
+            enterText(2, 4, '15', 0.15)
             pressTab(2, 3)
-            randomMonth = random.randint(1, 12)
-            for i in range(randomMonth):
-                print(i, 'month')
-                pyautogui.press('down')
+            pyautogui.press('down')
+            pyautogui.press('down')
             pressTab(2, 3)
-            randomYear = random.randint(1970, 1999)
-            enterText(2, 3, randomYear, 0.1)
+            enterText(2, 3, '1995', 0.1)
             waitForImageAppearAndClick('btnLuu.png', 1, 2, 1)
             waitForImageAppearAndClick('btnXong.png', 1, 2, 1)
             myAccountLink = 'https://myaccount.google.com/?utm_source=OGB&utm_medium=app'
@@ -180,6 +194,8 @@ def login():
                     pressTab(1, 1)
                     enterText(2, 3, listRecovery[i], 0.15)
                     waitForImageAppearAndClick('btnDone.png', 1, 2, 1)
+                    w = open('gmailSuccess.txt', 'a')
+                    w.write(listUser[i] + '|' + listPassword[i] + '|' + listRecovery[i] + '\n')
         exitBrowser(3, 5)
 
 
